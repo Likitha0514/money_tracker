@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'bloc/login/loginBloc.dart';
+import 'bloc/login/loginEvent.dart';
+import 'bloc/login/loginState.dart';
+import 'dashBoard.dart';
+import 'forgot_password.dart';
+import 'grid_buttons/amount_in.dart';
+import 'grid_buttons/amount_lent.dart';
+import 'grid_buttons/amount_out.dart';
+import 'grid_buttons/emi_dues.dart';
+import 'grid_buttons/monthly_analysis.dart';
+import 'grid_buttons/track_spend.dart';
+import 'grid_buttons/transaction.dart';
+import 'grid_buttons/weekly_analysis.dart';
+import 'register.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -10,121 +27,65 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      color: const Color(0xFF121212),
       title: 'Money Tracker',
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: const InitialScreen(), // <- New wrapper screen
       routes: {
-        '/login': (context) => LoginPage(),
-        '/register': (context) => RegisterPage(),
+        '/login': (_) => const LoginPage(),
+        '/register': (_) => const RegisterPage(),
+        '/dashboard': (_) => const DashboardPage(),
+        '/amount-lent': (_) => const AmountLentPage(),
+        '/amount-in': (_) => const AmountInPage(),
+        '/amount-out': (_) => const AmountOutPage(),
+        '/monthly-analysis': (_) => const MonthlyAnalysisPage(),
+        '/weekly-analysis': (_) => const WeeklyAnalysisPage(),
+        '/transactions': (_) => const TransactionPage(),
+        '/emi-dues': (_) => const EmiDuesPage(),
+        '/track-spend': (_) => const TrackSpendPage(),
+        '/forgot-password': (_) => const ForgotPasswordPage(),
       },
     );
   }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+/// A startup screen that checks login status
+class InitialScreen extends StatelessWidget {
+  const InitialScreen({super.key});
+
+  Future<bool> _isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+    final token = prefs.getString('token');
+    return email != null && token != null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Welcome to Money Tracker',
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.black54,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "LOGIN",
-                style: TextStyle(color: Colors.black87, fontSize: 30),
-              ),
-              Card(
-                color: Colors.black26,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          labelStyle: TextStyle(color: Colors.white),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white70),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          labelStyle: TextStyle(color: Colors.white),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white70),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
+    return FutureBuilder<bool>(
+      future: _isLoggedIn(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/login');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black54,
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text(
-                  'Login',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Don't have an account,",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/register');
-                    },
-                    child: Text(
-                      "Register",
-                      style: TextStyle(color: Colors.black87, fontSize: 18),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+        final loggedIn = snapshot.data ?? false;
+
+        // Navigate directly once we know the state
+        Future.microtask(() {
+          Navigator.of(context).pushReplacementNamed(
+            loggedIn ? '/dashboard' : '/login',
+          );
+        });
+
+        return const Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(child: CircularProgressIndicator()),
+        );
+      },
     );
   }
 }
@@ -134,113 +95,201 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        backgroundColor: Colors.green.shade700,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Email'),
+    return BlocProvider(
+      create: (_) => LoginBloc(),
+      child: const _LoginForm(),
+    );
+  }
+}
+
+/* ───────────────────────── private form widget ──────────────────────── */
+class _LoginForm extends StatefulWidget {
+  const _LoginForm();
+
+  @override
+  State<_LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<_LoginForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<LoginBloc, LoginState>(
+      listenWhen: (prev, curr) => prev.success != curr.success,
+      listener: (context, state) {
+        if (state.success) {
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/dashboard', (_) => false);
+        }
+      },
+      child: BlocBuilder<LoginBloc, LoginState>(
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: Color(0xFF121212),
+
+            appBar: AppBar(
+              title: const Text('Welcome to Money Tracker',
+                  style: TextStyle(color: Color(0xFF7CFC00))),
+              backgroundColor: Color(0xFF121212),
+
+              centerTitle: true,
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                // Handle login logic
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade700,
-                minimumSize: const Size(double.infinity, 50),
+            body: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      CircleAvatar(backgroundImage: AssetImage('assets/logo.jpeg'),maxRadius: 80,),
+                      const SizedBox(height: 20),
+
+                      const Text('LOGIN',
+                          style:
+                          TextStyle(color: Color(0xFF7CFC00), fontSize: 30)),
+                      const SizedBox(height: 24),
+                      _LoginCard(state: state),
+                      const SizedBox(height: 20),
+                      if (state.error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(state.error!,
+                              style: const TextStyle(color: Colors.white)),
+                        ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: state.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black54,
+                          ),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              context
+                                  .read<LoginBloc>()
+                                  .add(const LoginSubmitted());
+                            }
+                          },
+                          child: const Text('Login',
+                              style: TextStyle(color: Color(0xFF7CFC00),fontSize: 20)),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Don't have an account,",
+                              style: TextStyle(fontSize: 18,color: Color(0xFF7CFC00))),
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.of(context).pushNamed('/register'),
+                            child: const Text('Register',
+                                style: TextStyle(
+                                    color: Color(0xFF7CFC00), fontSize: 18)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: const Text('Login'),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 }
 
-InputDecoration _darkUnderline(String label) => InputDecoration(
-  labelText: label,
-  labelStyle: const TextStyle(color: Colors.white),
-  enabledBorder: const UnderlineInputBorder(
-    borderSide: BorderSide(color: Colors.white70),
-  ),
-  focusedBorder: const UnderlineInputBorder(
-    borderSide: BorderSide(color: Colors.white),
-  ),
-);
+/* ────────────────── split out the card for readability ───────────────── */
+class _LoginCard extends StatefulWidget {
+  final LoginState state;
+  const _LoginCard({required this.state});
 
-class RegisterPage extends StatelessWidget {
-  const RegisterPage({super.key});
+  @override
+  State<_LoginCard> createState() => _LoginCardState();
+}
+
+class _LoginCardState extends State<_LoginCard> {
+  bool _obscure = true;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        title: Center(
-          child: const Text('Register', style: TextStyle(color: Colors.white)),
-        ),
-        backgroundColor: Colors.black54,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
+    return Card(
+      color: Colors.black26,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            /* Email */
+            TextFormField(
+              initialValue: widget.state.email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                labelStyle: TextStyle(color: Color(0xFF7CFC00)),
+                enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+              ),
+              style: const TextStyle(color: Color(0xFF7CFC00)),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Email required';
+                final ok = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v);
+                return ok ? null : 'Enter a valid email';
+              },
+              onChanged: (v) =>
+                  context.read<LoginBloc>().add(LoginEmailChanged(v)),
             ),
-            color: Colors.black12,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
+            const SizedBox(height: 20),
 
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    decoration: _darkUnderline('Name'),
-                    style: const TextStyle(color: Colors.white),
+            /* Password */
+            TextFormField(
+              initialValue: widget.state.password,
+              obscureText: _obscure,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                labelStyle: const TextStyle(color: Color(0xFF7CFC00)),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscure ? Icons.visibility_off : Icons.visibility,
+                    color: Color(0xFF7CFC00),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: _darkUnderline('Email'),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: _darkUnderline('Password'),
-                    obscureText: true,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 16),
+                  onPressed: () {
+                    setState(() => _obscure = !_obscure);
+                  },
+                ),
+                enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+              ),
+              style: const TextStyle(color: Color(0xFF7CFC00)),
+              validator: (v) =>
+              v == null || v.isEmpty ? 'Password required' : null,
+              onChanged: (v) =>
+                  context.read<LoginBloc>().add(LoginPasswordChanged(v)),
+            ),
 
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle registration logic
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black12,
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                ],
+            /* Forgot Password Button */
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/forgot-password');
+                },
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(color: Color(0xFF7CFC00)),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
