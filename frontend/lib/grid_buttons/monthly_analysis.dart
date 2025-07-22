@@ -12,10 +12,20 @@ class MonthlyAnalysisPage extends StatefulWidget {
 }
 
 class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
-  final List<int> _years =
-  List.generate(5, (i) => DateTime.now().year - i);
+  final List<int> _years = List.generate(5, (i) => DateTime.now().year - i);
   final List<String> _months = const [
-    '01','02','03','04','05','06','07','08','09','10','11','12'
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
   ];
 
   String? _selMonth;
@@ -34,8 +44,8 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('email') ?? '';
     final uri = Uri.parse(
-        'http://localhost:5000/api/transactions/monthly-summary'
-            '?email=$email&year=$_selYear&month=$_selMonth'
+      'http://localhost:5000/api/transactions/monthly-summary'
+      '?email=$email&year=$_selYear&month=$_selMonth',
     );
 
     try {
@@ -63,7 +73,10 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
       backgroundColor: Color(0xFF121212),
       appBar: AppBar(
         iconTheme: IconThemeData(color: Color(0xFF7CFC00)),
-        title: const Text('Monthly Analysis',style: TextStyle(color: Color(0xFF7CFC00)),),
+        title: const Text(
+          'Monthly Analysis',
+          style: TextStyle(color: Color(0xFF7CFC00)),
+        ),
         backgroundColor: Colors.black54,
         centerTitle: true,
       ),
@@ -82,15 +95,24 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           DropdownButton<String>(
-                            dropdownColor: Color(0xFF7CFC00),
-                            hint: const Text('Month', style: TextStyle(color: Color(0xFF7CFC00))),
+                            dropdownColor: Colors.black54,
+                            hint: const Text(
+                              'Month',
+                              style: TextStyle(color: Color(0xFF7CFC00)),
+                            ),
                             value: _selMonth,
-                            items: _months.map((m) {
-                              return DropdownMenuItem(
-                                value: m,
-                                child: Text(m, style: const TextStyle(color: Color(0xFF7CFC00))),
-                              );
-                            }).toList(),
+                            items:
+                                _months.map((m) {
+                                  return DropdownMenuItem(
+                                    value: m,
+                                    child: Text(
+                                      m,
+                                      style: const TextStyle(
+                                        color: Color(0xFF7CFC00),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
                             onChanged: (val) {
                               setState(() => _selMonth = val);
                               _fetchSummary();
@@ -98,15 +120,24 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                           ),
                           const SizedBox(width: 16),
                           DropdownButton<int>(
-                            dropdownColor: Color(0xFF7CFC00),
-                            hint: const Text('Year', style: TextStyle(color: Color(0xFF7CFC00))),
+                            dropdownColor: Colors.black54,
+                            hint: const Text(
+                              'Year',
+                              style: TextStyle(color: Color(0xFF7CFC00)),
+                            ),
                             value: _selYear,
-                            items: _years.map((y) {
-                              return DropdownMenuItem(
-                                value: y,
-                                child: Text('$y', style: const TextStyle(color: Color(0xFF7CFC00))),
-                              );
-                            }).toList(),
+                            items:
+                                _years.map((y) {
+                                  return DropdownMenuItem(
+                                    value: y,
+                                    child: Text(
+                                      '$y',
+                                      style: const TextStyle(
+                                        color: Color(0xFF7CFC00),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
                             onChanged: (val) {
                               setState(() => _selYear = val);
                               _fetchSummary();
@@ -120,12 +151,26 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                         const Center(child: CircularProgressIndicator()),
 
                       if (!_loading && _error != null)
-                        Center(child: Text(_error!, style: const TextStyle(color: Colors.red))),
+                        Center(
+                          child: Text(
+                            _error!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
 
-                      if (!_loading && _error == null && (_lend + _inflow + _outflow) == 0)
-                        const Center(child: Text('No transactions', style: TextStyle(color: Color(0xFF7CFC00)))),
+                      if (!_loading &&
+                          _error == null &&
+                          (_lend + _inflow + _outflow) == 0)
+                        const Center(
+                          child: Text(
+                            'No transactions',
+                            style: TextStyle(color: Color(0xFF7CFC00)),
+                          ),
+                        ),
 
-                      if (!_loading && _error == null && (_lend + _inflow + _outflow) > 0)
+                      if (!_loading &&
+                          _error == null &&
+                          (_lend + _inflow + _outflow) > 0)
                         Column(
                           children: [
                             SizedBox(
@@ -135,24 +180,41 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                                   sections: [
                                     PieChartSectionData(
                                       value: _lend,
-                                      title: 'Lent\n₹${_lend.toStringAsFixed(0)}',
-                                      color: Colors.purpleAccent,
+                                      title:
+                                          'Lent\n₹${_lend.toStringAsFixed(0)}',
+                                      color: const Color.fromARGB(
+                                        255,
+                                        243,
+                                        143,
+                                        136,
+                                      ),
                                       radius: 60,
-                                      titleStyle: const TextStyle(color: Color(0xFF7CFC00), fontSize: 12),
+                                      titleStyle: const TextStyle(
+                                        color: Color(0xFF7CFC00),
+                                        fontSize: 12,
+                                      ),
                                     ),
                                     PieChartSectionData(
                                       value: _inflow,
-                                      title: 'In\n₹${_inflow.toStringAsFixed(0)}',
+                                      title:
+                                          'In\n₹${_inflow.toStringAsFixed(0)}',
                                       color: Color(0xFF7A5FFF),
                                       radius: 50,
-                                      titleStyle: const TextStyle(color: Color(0xFF7CFC00), fontSize: 12),
+                                      titleStyle: const TextStyle(
+                                        color: Color(0xFF7CFC00),
+                                        fontSize: 12,
+                                      ),
                                     ),
                                     PieChartSectionData(
                                       value: _outflow,
-                                      title: 'Out\n₹${_outflow.toStringAsFixed(0)}',
-                                      color:Color(0xFF7CFC00) ,
+                                      title:
+                                          'Out\n₹${_outflow.toStringAsFixed(0)}',
+                                      color: Color.fromARGB(255, 110, 218, 245),
                                       radius: 50,
-                                      titleStyle: const TextStyle(color: Color(0xFF7CFC00), fontSize: 12),
+                                      titleStyle: const TextStyle(
+                                        color: Color(0xFF7CFC00),
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ],
                                   sectionsSpace: 4,
@@ -163,13 +225,21 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                             const SizedBox(height: 24),
                             Text(
                               'Spend vs Income',
-                              style: TextStyle(color: Color(0xFF7CFC00).withOpacity(0.7)),
+                              style: TextStyle(
+                                color: Color(0xFF7CFC00).withOpacity(0.7),
+                              ),
                             ),
                             const SizedBox(height: 12),
                             LinearProgressIndicator(
-                              value: _inflow > 0 ? (_outflow / _inflow).clamp(0.0, 1.0) : 0,
-                              backgroundColor: Color(0xFF7CFC00),
-                              valueColor: AlwaysStoppedAnimation(Colors.redAccent),
+                              value:
+                                  _inflow > 0
+                                      ? (_outflow / _inflow).clamp(0.0, 1.0)
+                                      : 0,
+                              backgroundColor: Color(0xFF7A5FFF),
+
+                              valueColor: AlwaysStoppedAnimation(
+                                Color.fromARGB(255, 110, 218, 245),
+                              ),
                               minHeight: 12,
                             ),
                             const SizedBox(height: 6),
@@ -187,7 +257,6 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
           );
         },
       ),
-
     );
   }
 }
@@ -206,7 +275,10 @@ class _Badge extends StatelessWidget {
         color: color.withOpacity(0.9),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(label, style: const TextStyle(color: Colors.black, fontSize: 12)),
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.black, fontSize: 12),
+      ),
     );
   }
 }
@@ -220,7 +292,11 @@ class _LegendDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 6),
         Text(text, style: const TextStyle(color: Color(0xFF7CFC00))),
       ],

@@ -260,4 +260,29 @@ router.get('/monthly-summary', asyncHandler(async (req, res) => {
   res.json(summary);
 }));
 
+// GET /api/transactions/weekly-summary?email=...&start=YYYY-MM-DD&end=YYYY-MM-DD
+router.get('/weekly-summary', asyncHandler(async (req, res) => {
+  const { email, start, end } = req.query;
+  if (!email || !start || !end) {
+    return res.status(400).json({ message: 'Missing parameters' });
+  }
+  const user = await User.findOne({ email: new RegExp(`^${email}$`, 'i') });
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  const startDate = new Date(`${start}T00:00:00.000Z`);
+  const endDate = new Date(`${end}T23:59:59.999Z`);
+
+  // aggregate sums by type
+  const agg = await Transaction.aggregate([
+    { $match: { user: user._id, date: { $gte: startDate, $lte: endDate } } },
+    { $group: { _id: '$type', total: { $sum: '$amount' } } }
+  ]);
+
+  // default zero
+  const summary = { lend: 0, in: 0, out: 0 };
+  agg.forEach(row => { summary[row._id] = row.total; });
+
+  res.json(summary);
+}));
+
 module.exports = router;

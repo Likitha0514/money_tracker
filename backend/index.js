@@ -32,6 +32,7 @@ app.get('/health', (_, res) => res.json({ status: 'ok' }));   // quick ping
 const userRoutes = require('./routes/user');
 app.use('/api/users', userRoutes);   // <── mounted BEFORE listen
 app.use('/api/transactions', require('./routes/transactions'));
+app.use('/api/emi', require('./routes/emi'));
 
 /* 404 fallback */
 app.use((_, res) => res.status(404).json({ message: 'Route not found' }));

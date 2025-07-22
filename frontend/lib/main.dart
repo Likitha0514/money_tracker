@@ -30,11 +30,13 @@ class MyApp extends StatelessWidget {
       color: const Color(0xFF121212),
       title: 'Money Tracker',
       debugShowCheckedModeBanner: false,
-      home: const InitialScreen(), // <- New wrapper screen
+      home: const InitialScreen(),
+      // <- New wrapper screen
       routes: {
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),
         '/dashboard': (_) => const DashboardPage(),
+
         '/amount-lent': (_) => const AmountLentPage(),
         '/amount-in': (_) => const AmountInPage(),
         '/amount-out': (_) => const AmountOutPage(),
@@ -76,9 +78,9 @@ class InitialScreen extends StatelessWidget {
 
         // Navigate directly once we know the state
         Future.microtask(() {
-          Navigator.of(context).pushReplacementNamed(
-            loggedIn ? '/dashboard' : '/login',
-          );
+          Navigator.of(
+            context,
+          ).pushReplacementNamed(loggedIn ? '/dashboard' : '/login');
         });
 
         return const Scaffold(
@@ -95,10 +97,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => LoginBloc(),
-      child: const _LoginForm(),
-    );
+    return BlocProvider(create: (_) => LoginBloc(), child: const _LoginForm());
   }
 }
 
@@ -119,8 +118,9 @@ class _LoginFormState extends State<_LoginForm> {
       listenWhen: (prev, curr) => prev.success != curr.success,
       listener: (context, state) {
         if (state.success) {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/dashboard', (_) => false);
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/dashboard', (_) => false);
         }
       },
       child: BlocBuilder<LoginBloc, LoginState>(
@@ -129,8 +129,10 @@ class _LoginFormState extends State<_LoginForm> {
             backgroundColor: Color(0xFF121212),
 
             appBar: AppBar(
-              title: const Text('Welcome to Money Tracker',
-                  style: TextStyle(color: Color(0xFF7CFC00))),
+              title: const Text(
+                'Welcome to Money Tracker',
+                style: TextStyle(color: Color(0xFF7CFC00)),
+              ),
               backgroundColor: Color(0xFF121212),
 
               centerTitle: true,
@@ -142,53 +144,81 @@ class _LoginFormState extends State<_LoginForm> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      CircleAvatar(backgroundImage: AssetImage('assets/logo.jpeg'),maxRadius: 80,),
+                      CircleAvatar(
+                        backgroundImage: AssetImage('assets/logo.jpeg'),
+                        maxRadius: 80,
+                      ),
                       const SizedBox(height: 20),
 
-                      const Text('LOGIN',
-                          style:
-                          TextStyle(color: Color(0xFF7CFC00), fontSize: 30)),
+                      const Text(
+                        'LOGIN',
+                        style: TextStyle(
+                          color: Color(0xFF7CFC00),
+                          fontSize: 30,
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       _LoginCard(state: state),
                       const SizedBox(height: 20),
                       if (state.error != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(state.error!,
-                              style: const TextStyle(color: Colors.white)),
+                          child: Text(
+                            state.error!,
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
                       SizedBox(
                         width: double.infinity,
                         height: 50,
-                        child: state.isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.black54,
-                          ),
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              context
-                                  .read<LoginBloc>()
-                                  .add(const LoginSubmitted());
-                            }
-                          },
-                          child: const Text('Login',
-                              style: TextStyle(color: Color(0xFF7CFC00),fontSize: 20)),
-                        ),
+                        child:
+                            state.isLoading
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black54,
+                                  ),
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      context.read<LoginBloc>().add(
+                                        const LoginSubmitted(),
+                                      );
+                                    }
+                                  },
+                                  child: const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      color: Color(0xFF7CFC00),
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
                       ),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text("Don't have an account,",
-                              style: TextStyle(fontSize: 18,color: Color(0xFF7CFC00))),
+                          const Text(
+                            "Don't have an account,",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Color(0xFF7CFC00),
+                            ),
+                          ),
                           TextButton(
-                            onPressed: () =>
-                                Navigator.of(context).pushNamed('/register'),
-                            child: const Text('Register',
-                                style: TextStyle(
-                                    color: Color(0xFF7CFC00), fontSize: 18)),
+                            onPressed:
+                                () => Navigator.of(
+                                  context,
+                                ).pushNamed('/register'),
+                            child: const Text(
+                              'Register',
+                              style: TextStyle(
+                                color: Color(0xFF7CFC00),
+                                fontSize: 18,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -207,6 +237,7 @@ class _LoginFormState extends State<_LoginForm> {
 /* ────────────────── split out the card for readability ───────────────── */
 class _LoginCard extends StatefulWidget {
   final LoginState state;
+
   const _LoginCard({required this.state});
 
   @override
@@ -233,18 +264,22 @@ class _LoginCardState extends State<_LoginCard> {
                 labelText: 'Email',
                 labelStyle: TextStyle(color: Color(0xFF7CFC00)),
                 enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                  borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                ),
                 focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                  borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                ),
               ),
               style: const TextStyle(color: Color(0xFF7CFC00)),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Email required';
-                final ok = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v);
+                final ok = RegExp(
+                  r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
+                ).hasMatch(v);
                 return ok ? null : 'Enter a valid email';
               },
-              onChanged: (v) =>
-                  context.read<LoginBloc>().add(LoginEmailChanged(v)),
+              onChanged:
+                  (v) => context.read<LoginBloc>().add(LoginEmailChanged(v)),
             ),
             const SizedBox(height: 20),
 
@@ -265,15 +300,17 @@ class _LoginCardState extends State<_LoginCard> {
                   },
                 ),
                 enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                  borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                ),
                 focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                  borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                ),
               ),
               style: const TextStyle(color: Color(0xFF7CFC00)),
-              validator: (v) =>
-              v == null || v.isEmpty ? 'Password required' : null,
-              onChanged: (v) =>
-                  context.read<LoginBloc>().add(LoginPasswordChanged(v)),
+              validator:
+                  (v) => v == null || v.isEmpty ? 'Password required' : null,
+              onChanged:
+                  (v) => context.read<LoginBloc>().add(LoginPasswordChanged(v)),
             ),
 
             /* Forgot Password Button */
