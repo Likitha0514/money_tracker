@@ -2,7 +2,7 @@ const express = require('express');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
-
+const Emi = require('../models/Emi');
 const router = express.Router();
 
 /* ---------------- Helper: Add a transaction ---------------- */
@@ -116,107 +116,107 @@ router.post('/delete-range', async (req, res) => {
     });
 
     res.json({ message: `${result.deletedCount} transaction(s) deleted.` });
- } catch (err) {
+  } catch (err) {
 
-   res.status(500).json({ message: 'Server error' });
- }
+    res.status(500).json({ message: 'Server error' });
+  }
 
 });
 
 
 //POST /clear-full
- router.post('/clear-full', async (req, res) => {
-   const { transactionId, amount, date, note: userNote } = req.body;
-   try {
-     if (!transactionId || !amount || !date) {
-       return res.status(400).json({ message: 'Missing required fields' });
-     }
+router.post('/clear-full', async (req, res) => {
+  const { transactionId, amount, date, note: userNote } = req.body;
+  try {
+    if (!transactionId || !amount || !date) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
 
-     // 1) Remove the original lend txn, grab its stored note
-     const original = await Transaction.findByIdAndDelete(transactionId);
-     if (!original)
-       return res.status(404).json({ message: 'Original transaction not found' });
+    // 1) Remove the original lend txn, grab its stored note
+    const original = await Transaction.findByIdAndDelete(transactionId);
+    if (!original)
+      return res.status(404).json({ message: 'Original transaction not found' });
 
-     // 2) Build a new note that merges both
-     const combinedNote = [
-       'Cleared from lent',
-       original.notes && original.notes.trim(),
-       userNote && userNote.trim()
-     ]
-       .filter(Boolean)
-       .join(' • ');
-       // e.g. "Cleared from lent • Lunch with Sam • Partial amount"
+    // 2) Build a new note that merges both
+    const combinedNote = [
+      'Cleared from lent',
+      original.notes && original.notes.trim(),
+      userNote && userNote.trim()
+    ]
+      .filter(Boolean)
+      .join(' • ');
+    // e.g. "Cleared from lent • Lunch with Sam • Partial amount"
 
-     // 3) Create the “in” transaction, using that combined note
-     await Transaction.create({
-       user: original.user,
-       type: 'in',
-       amount,
-       date,
-       notes: combinedNote,
-     });
+    // 3) Create the “in” transaction, using that combined note
+    await Transaction.create({
+      user: original.user,
+      type: 'in',
+      amount,
+      date,
+      notes: combinedNote,
+    });
 
-     // 4) Restore the user's balance
-     const user = await User.findById(original.user);
-     if (user) {
-       user.balance += Number(amount);
-       await user.save();
-     }
+    // 4) Restore the user's balance
+    const user = await User.findById(original.user);
+    if (user) {
+      user.balance += Number(amount);
+      await user.save();
+    }
 
-     res.send({ success: true });
-   } catch (e) {
-     console.error(e);
-     res.status(500).send("Server error");
-   }
- });
+    res.send({ success: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Server error");
+  }
+});
 
- // POST /clear-partial
- router.post('/clear-partial', async (req, res) => {
-   const { transactionId, clearAmount, remainingAmount, date, note: userNote } = req.body;
-   try {
-     if (!transactionId || !clearAmount || !remainingAmount || !date) {
-       return res.status(400).json({ message: 'Missing required fields' });
-     }
+// POST /clear-partial
+router.post('/clear-partial', async (req, res) => {
+  const { transactionId, clearAmount, remainingAmount, date, note: userNote } = req.body;
+  try {
+    if (!transactionId || !clearAmount || !remainingAmount || !date) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
 
-     // 1) Update the original lend txn’s amount, keep its note
-     const updated = await Transaction.findByIdAndUpdate(
-       transactionId,
-       { amount: remainingAmount },
-       { new: true }
-     );
-     if (!updated) return res.status(404).json({ message: 'Transaction not found' });
+    // 1) Update the original lend txn’s amount, keep its note
+    const updated = await Transaction.findByIdAndUpdate(
+      transactionId,
+      { amount: remainingAmount },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Transaction not found' });
 
-     // 2) Combine notes
-     const combinedNote = [
-       'Partial clear from lent',
-       updated.notes && updated.notes.trim(),
-       userNote && userNote.trim()
-     ]
-       .filter(Boolean)
-       .join(' • ');
+    // 2) Combine notes
+    const combinedNote = [
+      'Partial clear from lent',
+      updated.notes && updated.notes.trim(),
+      userNote && userNote.trim()
+    ]
+      .filter(Boolean)
+      .join(' • ');
 
-     // 3) Create the “in” piece
-     await Transaction.create({
-       user: updated.user,
-       type: 'in',
-       amount: clearAmount,
-       date,
-       notes: combinedNote,
-     });
+    // 3) Create the “in” piece
+    await Transaction.create({
+      user: updated.user,
+      type: 'in',
+      amount: clearAmount,
+      date,
+      notes: combinedNote,
+    });
 
-     // 4) Restore the user’s balance by the cleared amount
-     const user = await User.findById(updated.user);
-     if (user) {
-       user.balance += Number(clearAmount);
-       await user.save();
-     }
+    // 4) Restore the user’s balance by the cleared amount
+    const user = await User.findById(updated.user);
+    if (user) {
+      user.balance += Number(clearAmount);
+      await user.save();
+    }
 
-     res.send({ success: true });
-   } catch (e) {
-     console.error(e);
-     res.status(500).send("Server error");
-   }
- });
+    res.send({ success: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Server error");
+  }
+});
 
 
 router.get('/balance', async (req, res) => {
@@ -283,6 +283,60 @@ router.get('/weekly-summary', asyncHandler(async (req, res) => {
   agg.forEach(row => { summary[row._id] = row.total; });
 
   res.json(summary);
+}));
+
+// POST /api/transactions/pay-emi
+
+router.post('/pay-emi', asyncHandler(async (req, res) => {
+  const { email, emiId, month, amount, note } = req.body; // ✅ now includes note
+  //console.log('📥 PAY EMI REQUEST:', req.body);
+
+  if (!email || !emiId || !month || amount === undefined || isNaN(Number(amount))) {
+    //console.log('❌ Missing or invalid input');
+    return res.status(400).json({ message: 'Missing or invalid fields' });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    //console.log('❌ User not found');
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const amt = Number(amount);
+  // console.log('💰 Parsed amount:', amt);
+
+  if (user.balance < amt) {
+    //console.log(`❌ Insufficient balance: ${user.balance} < ${amt}`);
+    return res.status(400).json({ message: 'Insufficient balance' });
+  }
+
+  const emi = await Emi.findById(emiId);
+  if (!emi) {
+    // console.log('❌ EMI not found');
+    return res.status(404).json({ message: 'EMI not found' });
+  }
+
+  //  console.log('📦 EMI before:', emi.months);
+
+  emi.months = emi.months.filter(m => m !== month);
+  await emi.save();
+  // console.log('✅ EMI month removed:', month);
+
+  user.balance -= amt;
+  const txn = await Transaction.create({
+    user: user._id,
+    amount: amt,
+    type: 'out',
+    notes: note,
+    date: new Date(),
+  });
+
+  await user.save();
+
+  // console.log('✅ Balance updated:', user.balance);
+  // console.log('✅ Transaction created:', txn);
+
+  res.status(201).json({ message: 'EMI paid successfully', transaction: txn, emi });
 }));
 
 module.exports = router;

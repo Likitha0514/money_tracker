@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class AddTransactionCard extends StatefulWidget {
-  final String type;   // lend | in | out
+  final String type; // lend | in | out
   final String email;
-  final void Function()? onSuccess; // ✅ optional callback after successful add
+  final void Function(Map<String, dynamic> txn)? onSuccess;
 
   const AddTransactionCard({
     super.key,
@@ -42,7 +42,7 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
       "type": widget.type,
       "amount": double.parse(_amountController.text),
       "notes": _noteController.text.trim(), // ✅ match model
-      "date": _selectedDate!.toIso8601String(),
+      "date": DateFormat('yyyy-MM-dd').format(_selectedDate!),
     };
 
     setState(() {
@@ -65,10 +65,15 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
           _selectedDate = null;
         });
 
-        widget.onSuccess?.call(); // ✅ notify parent
+        final createdTxn = jsonDecode(
+          res.body,
+        ); // extract transaction from response
+        widget.onSuccess?.call(createdTxn); // ✅ notify parent
       } else {
         final body = jsonDecode(res.body);
-        setState(() => _message = body['message'] ?? 'Failed to add transaction');
+        setState(
+          () => _message = body['message'] ?? 'Failed to add transaction',
+        );
       }
     } catch (e) {
       setState(() => _message = 'Network error: $e');
@@ -84,10 +89,7 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
       initialDate: now,
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 5),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark(),
-        child: child!,
-      ),
+      builder: (context, child) => Theme(data: ThemeData.dark(), child: child!),
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);
@@ -133,8 +135,8 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
                     borderSide: BorderSide(color: Color(0xFF7CFC00)),
                   ),
                 ),
-                validator: (v) =>
-                v == null || v.isEmpty ? 'Enter amount' : null,
+                validator:
+                    (v) => v == null || v.isEmpty ? 'Enter amount' : null,
               ),
               const SizedBox(height: 16),
               GestureDetector(
@@ -143,9 +145,10 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
                   child: TextFormField(
                     style: const TextStyle(color: Color(0xFF7CFC00)),
                     decoration: InputDecoration(
-                      labelText: _selectedDate == null
-                          ? 'Select Date'
-                          : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                      labelText:
+                          _selectedDate == null
+                              ? 'Select Date'
+                              : DateFormat('yyyy-MM-dd').format(_selectedDate!),
                       labelStyle: const TextStyle(color: Color(0xFF7CFC00)),
                       enabledBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: Color(0xFF7CFC00)),
@@ -179,7 +182,10 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
                   child: Text(
                     _message!,
                     style: TextStyle(
-                      color: _message!.contains("success") ? Colors.green : Colors.red,
+                      color:
+                          _message!.contains("success")
+                              ? Colors.green
+                              : Colors.red,
                     ),
                   ),
                 ),
@@ -191,9 +197,15 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF7CFC00),
                   ),
-                  child: _loading
-                      ? const CircularProgressIndicator(color: Color(0xFF7CFC00))
-                      : const Text("Add", style: TextStyle(color: Colors.black,fontSize: 22)),
+                  child:
+                      _loading
+                          ? const CircularProgressIndicator(
+                            color: Color(0xFF7CFC00),
+                          )
+                          : const Text(
+                            "Add",
+                            style: TextStyle(color: Colors.black, fontSize: 22),
+                          ),
                 ),
               ),
             ],

@@ -53,7 +53,8 @@ class _DashboardPageState extends State<DashboardPage> {
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       setState(() {
-        _balance = (data['balance'] ?? 0).toDouble();      });
+        _balance = (data['balance'] ?? 0).toDouble();
+      });
     }
   }
 
@@ -244,16 +245,16 @@ class _DashboardPageState extends State<DashboardPage> {
                                     (_, i) => _tile(
                                       buttons[i]['label'] as String,
                                       buttons[i]['icon'] as IconData,
-                                          () async {
-                                        final result = await Navigator.pushNamed(
-                                          context,
-                                          buttons[i]['route'] as String,
-                                        );
+                                      () async {
+                                        final result =
+                                            await Navigator.pushNamed(
+                                              context,
+                                              buttons[i]['route'] as String,
+                                            );
                                         if (result == true) {
                                           await _fetchBalance(); // 👈 refresh balance when child page returns true
                                         }
                                       },
-
                                     ),
                               );
                             },

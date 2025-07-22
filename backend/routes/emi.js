@@ -18,12 +18,12 @@ router.get('/fetchemi', async (req, res) => {
 });
 
 // Update EMI (pay a month)
-router.post('/updateemi', async (req, res) => {
-  const { emiId, month } = req.body;
-  const emi = await Emi.findById(emiId);
-  emi.months = emi.months.filter(m => m !== month);
-  await emi.save();
-  res.json({ success: true, emi });
-});
+// router.post('/updateemi', async (req, res) => {
+//   const { emiId, month } = req.body;
+//   const emi = await Emi.findById(emiId);
+//   emi.months = emi.months.filter(m => m !== month);
+//   await emi.save();
+//   res.json({ success: true, emi });
+// });
 
 module.exports = router;

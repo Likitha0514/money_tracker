@@ -97,92 +97,104 @@ class _AmountOutPageState extends State<AmountOutPage> {
   @override
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        title: const Text(
-          "Amount Out",
-          style: TextStyle(color: Color(0xFF7CFC00)),
-        ),
-        backgroundColor: Colors.black54,
-        iconTheme: const IconThemeData(color: Color(0xFF7CFC00)),
-        actions: [
-          const Text('ADD', style: TextStyle(color: Color(0xFF7CFC00))),
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF7CFC00), size: 25),
-            onPressed: () => setState(() => _showAddCard = !_showAddCard),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, true);
+        return false; // we already popped
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        appBar: AppBar(
+          title: const Text(
+            "Amount Out",
+            style: TextStyle(color: Color(0xFF7CFC00)),
           ),
-        ],
-      ),
-      body:
-          _email == null
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(
-                        "Balance: ₹$_balance",
-                        style: const TextStyle(
-                          color: Color(0xFF7CFC00),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+          backgroundColor: Colors.black54,
+          iconTheme: const IconThemeData(color: Color(0xFF7CFC00)),
+          actions: [
+            const Text('ADD', style: TextStyle(color: Color(0xFF7CFC00))),
+            IconButton(
+              icon: const Icon(Icons.add, color: Color(0xFF7CFC00), size: 25),
+              onPressed: () => setState(() => _showAddCard = !_showAddCard),
+            ),
+          ],
+        ),
+        body:
+            _email == null
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Balance: ₹$_balance",
+                          style: const TextStyle(
+                            color: Color(0xFF7CFC00),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (_showAddCard)
-                        AddTransactionCard(
-                          type: 'out',
-                          email: _email!,
-                          onSuccess: _onTransactionAdded,
-                        ),
-                      const SizedBox(height: 16),
-                      _loading
-                          ? const CircularProgressIndicator()
-                          : _error != null
-                          ? Text(
-                            _error!,
-                            style: const TextStyle(color: Colors.red),
-                          )
-                          : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _transactions.length,
-                            itemBuilder:
-                                (_, i) => Card(
-                                  color: Colors.black,
-                                  child: ListTile(
-                                    title: Text(
-                                      "₹ ${_transactions[i]['amount']}",
-                                      style: const TextStyle(
-                                        color: Color(0xFF7CFC00),
-                                        fontWeight: FontWeight.bold,
+                        const SizedBox(height: 8),
+                        if (_showAddCard)
+                          AddTransactionCard(
+                            type: 'out',
+                            email: _email!,
+                            onSuccess: (txn) {
+                              setState(() {
+                                _transactions.insert(0, txn);
+                                _showAddCard = false; // ✅ Close the add card
+                              });
+                              _fetchBalance();
+                            },
+                          ),
+                        const SizedBox(height: 16),
+                        _loading
+                            ? const CircularProgressIndicator()
+                            : _error != null
+                            ? Text(
+                              _error!,
+                              style: const TextStyle(color: Colors.red),
+                            )
+                            : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _transactions.length,
+                              itemBuilder:
+                                  (_, i) => Card(
+                                    color: Colors.black,
+                                    child: ListTile(
+                                      title: Text(
+                                        "₹ ${_transactions[i]['amount']}",
+                                        style: const TextStyle(
+                                          color: Color(0xFF7CFC00),
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    subtitle: Text(
-                                      _transactions[i]['notes'] ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
+                                      subtitle: Text(
+                                        _transactions[i]['notes'] ?? '',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
                                       ),
-                                    ),
-                                    trailing: Text(
-                                      _transactions[i]['date'] != null
-                                          ? _transactions[i]['date']
-                                              .toString()
-                                              .substring(0, 10)
-                                          : '',
-                                      style: const TextStyle(
-                                        color: Colors.white54,
+                                      trailing: Text(
+                                        _transactions[i]['date'] != null
+                                            ? _transactions[i]['date']
+                                                .toString()
+                                                .substring(0, 10)
+                                            : '',
+                                        style: const TextStyle(
+                                          color: Colors.white54,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                          ),
-                    ],
+                            ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+      ),
     );
   }
 }

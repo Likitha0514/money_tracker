@@ -136,7 +136,17 @@ class _AmountInPageState extends State<AmountInPage> {
                           AddTransactionCard(
                             type: 'in',
                             email: _email!,
-                            onSuccess: _onTransactionAdded,
+
+                            onSuccess: (txn) {
+                              setState(() {
+                                _transactions.insert(
+                                  0,
+                                  txn,
+                                ); // 👈 Add to top of list
+                                _showAddCard = false; // ✅ Close the add card
+                              });
+                              _fetchBalance();
+                            },
                           ),
                         const SizedBox(height: 16),
                         _loading

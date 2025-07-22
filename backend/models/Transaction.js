@@ -5,7 +5,7 @@ const transactionSchema = new mongoose.Schema(
   {
     user: {                          // ➜ reference to the User
       type: mongoose.Schema.Types.ObjectId,
-      ref:  'User',
+      ref: 'User',
       required: true,
       index: true,                   // fast look‑ups by user
     },

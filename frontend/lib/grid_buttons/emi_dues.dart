@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmiDuesPage extends StatefulWidget {
   const EmiDuesPage({super.key});
@@ -19,7 +20,8 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
   final _emiAmountController = TextEditingController();
   DateTime? _startMonth;
   DateTime? _endMonth;
-  String userEmail = "user@email.com"; // Replace with actual user email
+
+  String userEmail = '';
 
   @override
   void initState() {
@@ -28,6 +30,10 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
   }
 
   Future<void> _fetchEmis() async {
+    final prefs = await SharedPreferences.getInstance();
+    userEmail =
+        prefs.getString('email') ?? ''; // Replace with actual user email
+
     final res = await http.get(
       Uri.parse('http://localhost:5000/api/emi/fetchemi?email=$userEmail'),
     );
@@ -71,210 +77,236 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
     }
   }
 
-  Future<void> _payEmiMonth(String emiId, String month, double amount) async {
-    // Step 1: Mark EMI month as paid (existing endpoint)
-    final res = await http.post(
-      Uri.parse('http://localhost:5000/api/emi/updateemi'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'emiId': emiId, 'month': month}),
-    );
-
-    if (res.statusCode == 200) {
-      // Step 2: Add transaction (use /transactions/out)
-      final txnRes = await http.post(
-        Uri.parse('http://localhost:5000/api/transactions/out'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': userEmail,
-          'amount': amount,
-          'notes': 'EMI for $month',
-          'date': DateTime.now().toIso8601String(),
-        }),
+  Future<void> _fetchBalance() async {
+    try {
+      final res = await http.get(
+        Uri.parse(
+          'http://localhost:5000/api/transactions/balance?email=$userEmail',
+        ),
       );
 
-      if (txnRes.statusCode == 201) {
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
         setState(() {
-          _balance -= amount;
-          _transactions.insert(0, {
-            'amount': amount,
-            'note': 'EMI for $month',
-            'date': DateTime.now(),
-            'type': 'spend',
-          });
+          _balance = data['balance'] ?? 0.0;
         });
-        _fetchEmis(); // Refresh EMI list
       } else {
-        // Handle transaction failure
-        print('Transaction failed: ${txnRes.body}');
+        print('❌ Failed to fetch balance: ${res.body}');
       }
+    } catch (e) {
+      print('❌ Error fetching balance: $e');
+    }
+  }
+
+  Future<void> _payEmiMonth(
+    String emiId,
+    String month,
+    double amount,
+    String name,
+  ) async {
+    print('📤 Sending to pay-emi: $userEmail');
+    final res = await http.post(
+      Uri.parse('http://localhost:5000/api/transactions/pay-emi'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'email': userEmail,
+        'emiId': emiId,
+        'month': month,
+        'amount': amount,
+        'note': name,
+      }),
+    );
+
+    if (res.statusCode == 201) {
+      setState(() {
+        _balance -= amount;
+        _transactions.insert(0, {
+          'amount': amount,
+          'note': '$name EMI',
+          'date': DateTime.now(),
+          'type': 'spend',
+        });
+      });
+      _fetchEmis();
+      _fetchBalance();
     } else {
-      // Handle EMI update failure
-      print('EMI update failed: ${res.body}');
+      print('EMI pay failed: ${res.body}');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Color(0xFF7CFC00)),
-        title: const Text(
-          'EMI Dues',
-          style: TextStyle(color: Color(0xFF7CFC00)),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, true);
+        return false; // we already popped
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        appBar: AppBar(
+          iconTheme: const IconThemeData(color: Color(0xFF7CFC00)),
+          title: const Text(
+            'EMI Dues',
+            style: TextStyle(color: Color(0xFF7CFC00)),
+          ),
+          backgroundColor: Colors.black54,
         ),
-        backgroundColor: Colors.black54,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF7CFC00),
-                  foregroundColor: Colors.black,
-                ),
-                onPressed: () => setState(() => _showAddForm = !_showAddForm),
-                child: const Text('Add EMI'),
-              ),
-              if (_showAddForm)
-                Card(
-                  color: Colors.black,
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF7CFC00),
+                    foregroundColor: Colors.black,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextField(
-                          controller: _emiNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'EMI Name',
-                            labelStyle: TextStyle(color: Color(0xFF7CFC00)),
-                            filled: true,
-                            fillColor: Color(0xFF222222),
-                            border: OutlineInputBorder(),
+                  onPressed: () => setState(() => _showAddForm = !_showAddForm),
+                  child: const Text('Add EMI'),
+                ),
+                if (_showAddForm)
+                  Card(
+                    color: Colors.black,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextField(
+                            controller: _emiNameController,
+                            decoration: const InputDecoration(
+                              labelText: 'EMI Name',
+                              labelStyle: TextStyle(color: Color(0xFF7CFC00)),
+                              filled: true,
+                              fillColor: Color(0xFF222222),
+                              border: OutlineInputBorder(),
+                            ),
+                            style: const TextStyle(color: Color(0xFF7CFC00)),
                           ),
-                          style: const TextStyle(color: Color(0xFF7CFC00)),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: _emiAmountController,
-                          decoration: const InputDecoration(
-                            labelText: 'EMI Amount',
-                            labelStyle: TextStyle(color: Color(0xFF7CFC00)),
-                            filled: true,
-                            fillColor: Color(0xFF222222),
-                            border: OutlineInputBorder(),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _emiAmountController,
+                            decoration: const InputDecoration(
+                              labelText: 'EMI Amount',
+                              labelStyle: TextStyle(color: Color(0xFF7CFC00)),
+                              filled: true,
+                              fillColor: Color(0xFF222222),
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: Color(0xFF7CFC00)),
                           ),
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(color: Color(0xFF7CFC00)),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ListTile(
-                                tileColor: Color(0xFF222222),
-                                title: Text(
-                                  _startMonth == null
-                                      ? 'Start Month'
-                                      : DateFormat(
-                                        'yyyy-MM',
-                                      ).format(_startMonth!),
-                                  style: const TextStyle(
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ListTile(
+                                  tileColor: Color(0xFF222222),
+                                  title: Text(
+                                    _startMonth == null
+                                        ? 'Start Month'
+                                        : DateFormat(
+                                          'yyyy-MM',
+                                        ).format(_startMonth!),
+                                    style: const TextStyle(
+                                      color: Color(0xFF7CFC00),
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.calendar_today,
                                     color: Color(0xFF7CFC00),
                                   ),
-                                ),
-                                trailing: const Icon(
-                                  Icons.calendar_today,
-                                  color: Color(0xFF7CFC00),
-                                ),
-                                onTap: () async {
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2020),
-                                    lastDate: DateTime(2100),
-                                  );
-                                  if (picked != null) {
-                                    setState(
-                                      () =>
-                                          _startMonth = DateTime(
-                                            picked.year,
-                                            picked.month,
-                                            1,
-                                          ),
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime(2100),
                                     );
-                                  }
-                                },
+                                    if (picked != null) {
+                                      setState(
+                                        () =>
+                                            _startMonth = DateTime(
+                                              picked.year,
+                                              picked.month,
+                                              1,
+                                            ),
+                                      );
+                                    }
+                                  },
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: ListTile(
-                                tileColor: Color(0xFF222222),
-                                title: Text(
-                                  _endMonth == null
-                                      ? 'End Month'
-                                      : DateFormat(
-                                        'yyyy-MM',
-                                      ).format(_endMonth!),
-                                  style: const TextStyle(
+                              Expanded(
+                                child: ListTile(
+                                  tileColor: Color(0xFF222222),
+                                  title: Text(
+                                    _endMonth == null
+                                        ? 'End Month'
+                                        : DateFormat(
+                                          'yyyy-MM',
+                                        ).format(_endMonth!),
+                                    style: const TextStyle(
+                                      color: Color(0xFF7CFC00),
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.calendar_today,
                                     color: Color(0xFF7CFC00),
                                   ),
-                                ),
-                                trailing: const Icon(
-                                  Icons.calendar_today,
-                                  color: Color(0xFF7CFC00),
-                                ),
-                                onTap: () async {
-                                  final picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2020),
-                                    lastDate: DateTime(2100),
-                                  );
-                                  if (picked != null) {
-                                    setState(
-                                      () =>
-                                          _endMonth = DateTime(
-                                            picked.year,
-                                            picked.month,
-                                            1,
-                                          ),
+                                  onTap: () async {
+                                    final picked = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime(2100),
                                     );
-                                  }
-                                },
+                                    if (picked != null) {
+                                      setState(
+                                        () =>
+                                            _endMonth = DateTime(
+                                              picked.year,
+                                              picked.month,
+                                              1,
+                                            ),
+                                      );
+                                    }
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF7CFC00),
-                            foregroundColor: Colors.black,
+                            ],
                           ),
-                          onPressed: _addEmi,
-                          child: const Text('Submit EMI'),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF7CFC00),
+                              foregroundColor: Colors.black,
+                            ),
+                            onPressed: _addEmi,
+                            child: const Text('Submit EMI'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                const SizedBox(height: 20),
+                ..._emis.map(
+                  (emi) => EmiCard(
+                    emi: emi,
+                    onPay:
+                        (month) => _payEmiMonth(
+                          emi['_id'],
+                          month,
+                          emi['amount'],
+                          emi['name'],
+                        ),
+                  ),
                 ),
-              const SizedBox(height: 20),
-              ..._emis.map(
-                (emi) => EmiCard(
-                  emi: emi,
-                  onPay:
-                      (month) => _payEmiMonth(emi['_id'], month, emi['amount']),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

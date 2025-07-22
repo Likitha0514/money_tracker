@@ -34,7 +34,11 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
   }
 
   Future<void> _fetchBalance() async {
-    final res = await http.get(Uri.parse('http://localhost:5000/api/transactions/balance?email=${widget.email}'));
+    final res = await http.get(
+      Uri.parse(
+        'http://localhost:5000/api/transactions/balance?email=${widget.email}',
+      ),
+    );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
       setState(() {
@@ -42,6 +46,7 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
       });
     }
   }
+
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -49,23 +54,22 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
       initialDate: now,
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 5),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark(),
-        child: child!,
-      ),
+      builder: (context, child) => Theme(data: ThemeData.dark(), child: child!),
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);
     }
   }
+
   Future<void> _submitTransaction() async {
     final amount = double.tryParse(_amountController.text);
     final notes = _notesController.text.trim();
 
     // Validate amount
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Enter valid amount')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter valid amount')));
       return;
     }
 
@@ -79,8 +83,9 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
 
     // ** New: check & prompt date selection **
     if (_selectedDate == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Please select a date.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a date.')));
       return;
     }
 
@@ -92,7 +97,7 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
       'notes': notes,
       'email': widget.email,
       'isPrevious': _mode == 'previous',
-      'date': _selectedDate!.toIso8601String(),  // include the date
+      'date': _selectedDate!.toIso8601String(), // include the date
     });
 
     try {
@@ -110,12 +115,14 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
         setState(() => _selectedDate = null);
       } else {
         final msg = jsonDecode(res.body)['message'] ?? res.body;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Add failed: $msg')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Add failed: $msg')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Network error: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       setState(() => _isSubmitting = false);
     }
@@ -130,7 +137,10 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Is this a Previous or New Lend?", style: TextStyle(color: Color(0xFF7CFC00),fontSize: 16)),
+            const Text(
+              "Is this a Previous or New Lend?",
+              style: TextStyle(color: Color(0xFF7CFC00), fontSize: 16),
+            ),
             Row(
               children: [
                 Radio<String>(
@@ -142,10 +152,11 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
                 Text(
                   "Previous",
                   style: TextStyle(
-                    fontSize: 16,  // ← increase this
-                    color: _mode == 'previous'
-                        ? const Color(0xFF7CFC00)
-                        : Colors.white70,
+                    fontSize: 16, // ← increase this
+                    color:
+                        _mode == 'previous'
+                            ? const Color(0xFF7CFC00)
+                            : Colors.white70,
                   ),
                 ),
 
@@ -160,10 +171,11 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
                 Text(
                   "New",
                   style: TextStyle(
-                    fontSize: 16,  // ← and this
-                    color: _mode == 'new'
-                        ? const Color(0xFF7CFC00)
-                        : Colors.white70,
+                    fontSize: 16, // ← and this
+                    color:
+                        _mode == 'new'
+                            ? const Color(0xFF7CFC00)
+                            : Colors.white70,
                   ),
                 ),
               ],
@@ -192,9 +204,10 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
                 child: TextFormField(
                   style: const TextStyle(color: Color(0xFF7CFC00)),
                   decoration: InputDecoration(
-                    labelText: _selectedDate == null
-                        ? 'Select Date'
-                        : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                    labelText:
+                        _selectedDate == null
+                            ? 'Select Date'
+                            : DateFormat('yyyy-MM-dd').format(_selectedDate!),
                     labelStyle: const TextStyle(color: Color(0xFF7CFC00)),
                     enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Color(0xFF7CFC00)),
@@ -224,10 +237,16 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitTransaction,
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7CFC00)),
-              child: _isSubmitting
-                  ? const CircularProgressIndicator(color: Colors.black)
-                  : const Text("Submit", style: TextStyle(color: Colors.black)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7CFC00),
+              ),
+              child:
+                  _isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : const Text(
+                        "Submit",
+                        style: TextStyle(color: Colors.black),
+                      ),
             ),
           ],
         ),

@@ -1,11 +1,11 @@
 require('dotenv').config();
-const express   = require('express');
-const mongoose  = require('mongoose');
-const cors      = require('cors');
-const helmet    = require('helmet');
-const morgan    = require('morgan');
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* ─────────────────────────────────────────────────────────── middle‑ware ── */
@@ -17,7 +17,7 @@ app.use(morgan('tiny'));    // request logger
 /* ───────────────────────────────────────────────────────────── database ─── */
 mongoose
   .connect(process.env.MONGO_URI, {
-    useNewUrlParser:    true,
+    useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log('✅  MongoDB connected'))

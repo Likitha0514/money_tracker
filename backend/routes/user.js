@@ -1,8 +1,8 @@
-const express       = require('express');
-const asyncHandler  = require('express-async-handler');
+const express = require('express');
+const asyncHandler = require('express-async-handler');
 const { body, validationResult } = require('express-validator');
-const jwt           = require('jsonwebtoken');
-const User          = require('../models/User');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 const router = express.Router();
 
@@ -52,7 +52,7 @@ router.post(
 
     // get user and explicit pwd field
     const user = await User.findOne({ email }).select('+password');
-    const ok   = user && (await user.comparePassword(password));
+    const ok = user && (await user.comparePassword(password));
 
     if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 

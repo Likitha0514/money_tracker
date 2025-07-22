@@ -217,127 +217,135 @@ class _AmountLentPageState extends State<AmountLentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        title: const Text(
-          "Amount Lent",
-          style: TextStyle(color: Color(0xFF7CFC00)),
-        ),
-        backgroundColor: Colors.black54,
-        iconTheme: const IconThemeData(color: Color(0xFF7CFC00)),
-        actions: [
-          const Text('ADD', style: TextStyle(color: Color(0xFF7CFC00))),
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF7CFC00), size: 25),
-            onPressed: () => setState(() => _showAddCard = !_showAddCard),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, true);
+        return false; // we already popped
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        appBar: AppBar(
+          title: const Text(
+            "Amount Lent",
+            style: TextStyle(color: Color(0xFF7CFC00)),
           ),
-        ],
-      ),
-      body:
-          _email == null
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      if (_showAddCard)
-                        AddTransactionCard1(
-                          type: 'lend',
-                          email: _email!,
-                          onSuccess: _onTransactionAdded,
-                        ),
-                      const SizedBox(height: 16),
-                      _loading
-                          ? const CircularProgressIndicator()
-                          : _error != null
-                          ? Text(
-                            _error!,
-                            style: const TextStyle(color: Colors.red),
-                          )
-                          : _transactions.isEmpty
-                          ? const Text(
-                            "",
-                            style: TextStyle(color: Color(0xFF7CFC00)),
-                          )
-                          : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _transactions.length,
-                            itemBuilder:
-                                (_, i) => Card(
-                                  color: Colors.black,
-                                  child: ListTile(
-                                    title: Text(
-                                      "₹ ${_transactions[i]['amount']}",
-                                      style: const TextStyle(
-                                        color: Color(0xFF7CFC00),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      _transactions[i]['notes'] ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          _transactions[i]['date'] != null
-                                              ? _transactions[i]['date']
-                                                  .toString()
-                                                  .substring(0, 10)
-                                              : '',
-                                          style: const TextStyle(
-                                            color: Colors.white54,
-                                          ),
+          backgroundColor: Colors.black54,
+          iconTheme: const IconThemeData(color: Color(0xFF7CFC00)),
+          actions: [
+            const Text('ADD', style: TextStyle(color: Color(0xFF7CFC00))),
+            IconButton(
+              icon: const Icon(Icons.add, color: Color(0xFF7CFC00), size: 25),
+              onPressed: () => setState(() => _showAddCard = !_showAddCard),
+            ),
+          ],
+        ),
+        body:
+            _email == null
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        if (_showAddCard)
+                          AddTransactionCard1(
+                            type: 'lend',
+                            email: _email!,
+                            onSuccess: _onTransactionAdded,
+                          ),
+                        const SizedBox(height: 16),
+                        _loading
+                            ? const CircularProgressIndicator()
+                            : _error != null
+                            ? Text(
+                              _error!,
+                              style: const TextStyle(color: Colors.red),
+                            )
+                            : _transactions.isEmpty
+                            ? const Text(
+                              "",
+                              style: TextStyle(color: Color(0xFF7CFC00)),
+                            )
+                            : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _transactions.length,
+                              itemBuilder:
+                                  (_, i) => Card(
+                                    color: Colors.black,
+                                    child: ListTile(
+                                      title: Text(
+                                        "₹ ${_transactions[i]['amount']}",
+                                        style: const TextStyle(
+                                          color: Color(0xFF7CFC00),
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        PopupMenuButton<String>(
-                                          onSelected: (value) {
-                                            if (value == 'clear') {
-                                              _clearTransaction(
-                                                _transactions[i]['_id'],
-                                                _transactions[i]['amount'],
-                                              );
-                                            } else if (value == 'partial') {
-                                              _showPartialClearDialog(
-                                                transactionId:
-                                                    _transactions[i]['_id'],
-                                                currentAmount:
-                                                    _transactions[i]['amount'],
-                                                currentNote:
-                                                    _transactions[i]['notes'],
-                                              );
-                                            }
-                                          },
-                                          itemBuilder:
-                                              (context) => [
-                                                const PopupMenuItem(
-                                                  value: 'clear',
-                                                  child: Text('Clear'),
-                                                ),
-                                                const PopupMenuItem(
-                                                  value: 'partial',
-                                                  child: Text('Partial Clear'),
-                                                ),
-                                              ],
-                                          icon: const Icon(
-                                            Icons.more_vert,
-                                            color: Colors.white70,
-                                          ),
+                                      ),
+                                      subtitle: Text(
+                                        _transactions[i]['notes'] ?? '',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
                                         ),
-                                      ],
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            _transactions[i]['date'] != null
+                                                ? _transactions[i]['date']
+                                                    .toString()
+                                                    .substring(0, 10)
+                                                : '',
+                                            style: const TextStyle(
+                                              color: Colors.white54,
+                                            ),
+                                          ),
+                                          PopupMenuButton<String>(
+                                            onSelected: (value) {
+                                              if (value == 'clear') {
+                                                _clearTransaction(
+                                                  _transactions[i]['_id'],
+                                                  _transactions[i]['amount'],
+                                                );
+                                              } else if (value == 'partial') {
+                                                _showPartialClearDialog(
+                                                  transactionId:
+                                                      _transactions[i]['_id'],
+                                                  currentAmount:
+                                                      _transactions[i]['amount'],
+                                                  currentNote:
+                                                      _transactions[i]['notes'],
+                                                );
+                                              }
+                                            },
+                                            itemBuilder:
+                                                (context) => [
+                                                  const PopupMenuItem(
+                                                    value: 'clear',
+                                                    child: Text('Clear'),
+                                                  ),
+                                                  const PopupMenuItem(
+                                                    value: 'partial',
+                                                    child: Text(
+                                                      'Partial Clear',
+                                                    ),
+                                                  ),
+                                                ],
+                                            icon: const Icon(
+                                              Icons.more_vert,
+                                              color: Colors.white70,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                          ),
-                    ],
+                            ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+      ),
     );
   }
 }
