@@ -276,50 +276,51 @@ class _TransactionPageState extends State<TransactionPage> {
                 children: [
                   Row(
                     children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _pickDateRange,
-                          child: Text(
-                            (_startDate != null && _endDate != null)
-                                ? "Filtered: ${DateFormat('dd MMM yyyy').format(_startDate!)} → ${DateFormat('dd MMM yyyy').format(_endDate!)}"
-                                : "Filter by Date Range",
-                            overflow:
-                                TextOverflow.ellipsis, // Optional for safety
-                          ),
+                      ElevatedButton(
+                        onPressed: _pickDateRange,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(
+                          (_startDate != null && _endDate != null)
+                              ? "Filtered: ${DateFormat('dd MMM yyyy').format(_startDate!)} → ${DateFormat('dd MMM yyyy').format(_endDate!)}"
+                              : "Filter by Date Range",
+                          overflow:
+                              TextOverflow.ellipsis, // Optional for safety
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: _filteredTransactions.isEmpty
-                                ? null
-                                : _exportToPdf,
-                            icon: const Icon(Icons.picture_as_pdf),
-                            label: const Text('Export'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton.icon(
-                            onPressed: (_startDate == null ||
-                                    _endDate == null ||
-                                    _filteredTransactions.isEmpty)
-                                ? null
-                                : _confirmDelete,
-                            icon: const Icon(Icons.delete),
-                            label: const Text('Delete'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: Colors.grey,
-                              disabledForegroundColor: Colors.white70,
-                            ),
-                          ),
-                        ],
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed:
+                            _filteredTransactions.isEmpty ? null : _exportToPdf,
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('Export'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: (_startDate == null ||
+                                _endDate == null ||
+                                _filteredTransactions.isEmpty)
+                            ? null
+                            : _confirmDelete,
+                        icon: const Icon(Icons.delete),
+                        label: const Text('Delete'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.grey,
+                          disabledForegroundColor: Colors.white70,
+                        ),
                       ),
                     ],
                   ),

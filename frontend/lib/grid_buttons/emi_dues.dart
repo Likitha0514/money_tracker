@@ -51,8 +51,7 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
     if (_emiNameController.text.isEmpty ||
         _emiAmountController.text.isEmpty ||
         _startMonth == null ||
-        _endMonth == null)
-      return;
+        _endMonth == null) return;
     final months = <String>[];
     var current = DateTime(_startMonth!.year, _startMonth!.month);
     while (!current.isAfter(_endMonth!)) {
@@ -93,10 +92,10 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
           _balance = data['balance'] ?? 0.0;
         });
       } else {
-        print('❌ Failed to fetch balance: ${res.body}');
+        //print('❌ Failed to fetch balance: ${res.body}');
       }
     } catch (e) {
-      print('❌ Error fetching balance: $e');
+      // print('❌ Error fetching balance: $e');
     }
   }
 
@@ -107,10 +106,11 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
     String name,
   ) async {
     try {
+      //print('📤 Sending EMI payment request for $emiId → $month → ₹$amount');
+
       final res = await http.post(
         Uri.parse(
-          'https://money-tracker-ofsn.onrender.com/api/transactions/pay-emi',
-        ),
+            'https://money-tracker-ofsn.onrender.com/api/transactions/pay-emi'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': userEmail,
@@ -120,6 +120,9 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
           'note': name,
         }),
       );
+
+      // print('📥 Response status: ${res.statusCode}');
+      // print('📥 Response body: ${res.body}');
 
       if (res.statusCode == 201) {
         setState(() {
@@ -143,6 +146,7 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
         };
       }
     } catch (e) {
+      //print('❌ Exception occurred: $e');
       return {'success': false, 'message': 'Something went wrong'};
     }
   }
@@ -223,8 +227,8 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
                                     _startMonth == null
                                         ? 'Start Month'
                                         : DateFormat(
-                                          'yyyy-MM',
-                                        ).format(_startMonth!),
+                                            'yyyy-MM',
+                                          ).format(_startMonth!),
                                     style: const TextStyle(
                                       color: Color(0xFF7CFC00),
                                     ),
@@ -242,12 +246,11 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
                                     );
                                     if (picked != null) {
                                       setState(
-                                        () =>
-                                            _startMonth = DateTime(
-                                              picked.year,
-                                              picked.month,
-                                              1,
-                                            ),
+                                        () => _startMonth = DateTime(
+                                          picked.year,
+                                          picked.month,
+                                          1,
+                                        ),
                                       );
                                     }
                                   },
@@ -260,8 +263,8 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
                                     _endMonth == null
                                         ? 'End Month'
                                         : DateFormat(
-                                          'yyyy-MM',
-                                        ).format(_endMonth!),
+                                            'yyyy-MM',
+                                          ).format(_endMonth!),
                                     style: const TextStyle(
                                       color: Color(0xFF7CFC00),
                                     ),
@@ -279,12 +282,11 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
                                     );
                                     if (picked != null) {
                                       setState(
-                                        () =>
-                                            _endMonth = DateTime(
-                                              picked.year,
-                                              picked.month,
-                                              1,
-                                            ),
+                                        () => _endMonth = DateTime(
+                                          picked.year,
+                                          picked.month,
+                                          1,
+                                        ),
                                       );
                                     }
                                   },
@@ -309,13 +311,12 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
                 ..._emis.map(
                   (emi) => EmiCard(
                     emi: emi,
-                    onPay:
-                        (month) => _payEmiMonth(
-                          emi['_id'],
-                          month,
-                          emi['amount'],
-                          emi['name'],
-                        ),
+                    onPay: (month) => _payEmiMonth(
+                      emi['_id'],
+                      month,
+                      (emi['amount'] as num).toDouble(),
+                      emi['name'],
+                    ),
                   ),
                 ),
               ],
@@ -393,36 +394,33 @@ class _EmiCardState extends State<EmiCard> {
                           onPressed: () async {
                             final pay = await showDialog<bool>(
                               context: context,
-                              builder:
-                                  (ctx) => AlertDialog(
-                                    backgroundColor: Colors.black,
-                                    title: Text(
-                                      'Pay EMI for $month?',
-                                      style: const TextStyle(
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: Colors.black,
+                                title: Text(
+                                  'Pay EMI for $month?',
+                                  style: const TextStyle(
+                                    color: Color(0xFF7CFC00),
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text(
+                                      'Cancel',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text(
+                                      'Pay',
+                                      style: TextStyle(
                                         color: Color(0xFF7CFC00),
                                       ),
                                     ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed:
-                                            () => Navigator.pop(ctx, false),
-                                        child: const Text(
-                                          'Cancel',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed:
-                                            () => Navigator.pop(ctx, true),
-                                        child: const Text(
-                                          'Pay',
-                                          style: TextStyle(
-                                            color: Color(0xFF7CFC00),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
                                   ),
+                                ],
+                              ),
                             );
                             if (pay == true) {
                               final result = await widget.onPay(month);
@@ -434,10 +432,9 @@ class _EmiCardState extends State<EmiCard> {
                                           ? '✅ EMI paid successfully'
                                           : '❌ ${result['message'] ?? 'Failed to pay EMI'}',
                                     ),
-                                    backgroundColor:
-                                        result['success']
-                                            ? Colors.green
-                                            : Colors.red,
+                                    backgroundColor: result['success']
+                                        ? Colors.green
+                                        : Colors.red,
                                   ),
                                 );
                               }
