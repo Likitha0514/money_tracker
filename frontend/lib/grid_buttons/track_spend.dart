@@ -99,7 +99,7 @@ class _TrackSpendPageState extends State<TrackSpendPage> {
                         .toList(),
                 headerStyle: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
-                  color: PdfColor.fromInt(0xFF000000),
+                  color: PdfColor.fromInt(0xFFFFFFFF),
                 ),
                 cellStyle: pw.TextStyle(
                   fontSize: 10,

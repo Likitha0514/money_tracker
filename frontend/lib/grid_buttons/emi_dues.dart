@@ -98,39 +98,48 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
     }
   }
 
-  Future<void> _payEmiMonth(
+  Future<Map<String, dynamic>> _payEmiMonth(
     String emiId,
     String month,
     double amount,
     String name,
   ) async {
-    print('📤 Sending to pay-emi: $userEmail');
-    final res = await http.post(
-      Uri.parse('http://localhost:5000/api/transactions/pay-emi'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'email': userEmail,
-        'emiId': emiId,
-        'month': month,
-        'amount': amount,
-        'note': name,
-      }),
-    );
-
-    if (res.statusCode == 201) {
-      setState(() {
-        _balance -= amount;
-        _transactions.insert(0, {
+    try {
+      final res = await http.post(
+        Uri.parse('http://localhost:5000/api/transactions/pay-emi'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': userEmail,
+          'emiId': emiId,
+          'month': month,
           'amount': amount,
-          'note': '$name EMI',
-          'date': DateTime.now(),
-          'type': 'spend',
+          'note': name,
+        }),
+      );
+
+      if (res.statusCode == 201) {
+        setState(() {
+          _balance -= amount;
+          _transactions.insert(0, {
+            'amount': amount,
+            'note': '$name EMI',
+            'date': DateTime.now(),
+            'type': 'spend',
+          });
         });
-      });
-      _fetchEmis();
-      _fetchBalance();
-    } else {
-      print('EMI pay failed: ${res.body}');
+        _fetchEmis();
+        _fetchBalance();
+
+        return {'success': true};
+      } else {
+        final errorData = json.decode(res.body);
+        return {
+          'success': false,
+          'message': errorData['message'] ?? 'Failed to pay EMI',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Something went wrong'};
     }
   }
 
@@ -411,7 +420,24 @@ class _EmiCardState extends State<EmiCard> {
                                     ],
                                   ),
                             );
-                            if (pay == true) widget.onPay(month);
+                            if (pay == true) {
+                              final result = await widget.onPay(month);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      result['success']
+                                          ? '✅ EMI paid successfully'
+                                          : '❌ ${result['message'] ?? 'Failed to pay EMI'}',
+                                    ),
+                                    backgroundColor:
+                                        result['success']
+                                            ? Colors.green
+                                            : Colors.red,
+                                  ),
+                                );
+                              }
+                            }
                           },
                         ),
                       ),

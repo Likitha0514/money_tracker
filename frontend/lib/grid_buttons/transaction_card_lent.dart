@@ -97,7 +97,9 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
       'notes': notes,
       'email': widget.email,
       'isPrevious': _mode == 'previous',
-      'date': _selectedDate!.toIso8601String(), // include the date
+      'date': DateFormat(
+        'yyyy-MM-dd',
+      ).format(_selectedDate!), // include the date
     });
 
     try {
