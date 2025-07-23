@@ -1,4 +1,4 @@
-import 'package:MoneyTracker/grid_buttons/transaction_card_lent.dart';
+import 'package:moneytracker/grid_buttons/transaction_card_lent.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -25,7 +25,9 @@ class _AmountLentPageState extends State<AmountLentPage> {
     if (email == null) return;
 
     final res = await http.get(
-      Uri.parse('http://localhost:5000/api/transactions/balance?email=$email'),
+      Uri.parse(
+        'https://money-tracker-ofsn.onrender.com/api/transactions/balance?email=$email',
+      ),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
@@ -61,7 +63,7 @@ class _AmountLentPageState extends State<AmountLentPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'http://localhost:5000/api/transactions?type=lend&email=$email',
+          'https://money-tracker-ofsn.onrender.com/api/transactions?type=lend&email=$email',
         ),
       );
       if (res.statusCode == 200) {
@@ -85,7 +87,9 @@ class _AmountLentPageState extends State<AmountLentPage> {
   }
 
   Future<void> _clearTransaction(String transactionId, num amount) async {
-    final uri = Uri.parse('http://localhost:5000/api/transactions/clear-full');
+    final uri = Uri.parse(
+      'https://money-tracker-ofsn.onrender.com/api/transactions/clear-full',
+    );
     final body = jsonEncode({
       'transactionId': transactionId,
       'amount': amount,
@@ -173,7 +177,7 @@ class _AmountLentPageState extends State<AmountLentPage> {
     required String? originalNote,
   }) async {
     final uri = Uri.parse(
-      'http://localhost:5000/api/transactions/clear-partial',
+      'https://money-tracker-ofsn.onrender.com/api/transactions/clear-partial',
     );
     final body = jsonEncode({
       'transactionId': transactionId,

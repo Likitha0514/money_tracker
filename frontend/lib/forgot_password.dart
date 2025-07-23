@@ -18,7 +18,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   bool _isLoading = false;
   String? _error;
 
-  final _baseUrl = 'http://localhost:5000'; // Replace with your actual API
+  final _baseUrl =
+      'https://money-tracker-ofsn.onrender.com'; // Replace with your actual API
 
   Future<void> _verifyEmail() async {
     final email = _emailController.text.trim();
@@ -104,7 +105,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Scaffold(
       backgroundColor: Color(0xFF121212),
       appBar: AppBar(
-        title: const Text('Forgot Password', style: TextStyle(color: Color(0xFF7CFC00))),
+        title: const Text(
+          'Forgot Password',
+          style: TextStyle(color: Color(0xFF7CFC00)),
+        ),
         backgroundColor: Color(0xFF121212),
         centerTitle: true,
         iconTheme: IconThemeData(color: Color(0xFF7CFC00)),
@@ -114,7 +118,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Card(
             color: Colors.black26,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Form(
@@ -124,7 +130,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     if (!_emailVerified) ...[
                       const Text(
                         'Enter your email',
-                        style: TextStyle(fontSize: 22, color: Color(0xFF7CFC00)),
+                        style: TextStyle(
+                          fontSize: 22,
+                          color: Color(0xFF7CFC00),
+                        ),
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -135,13 +144,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           labelText: 'Email',
                           labelStyle: TextStyle(color: Color(0xFF7CFC00)),
                           enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                            borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                          ),
                           focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                            borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                          ),
                         ),
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Email required';
-                          final ok = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v);
+                          if (v == null || v.trim().isEmpty)
+                            return 'Email required';
+                          final ok = RegExp(
+                            r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(v);
                           return ok ? null : 'Enter a valid email';
                         },
                       ),
@@ -153,15 +167,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             backgroundColor: Colors.black87,
                           ),
                           onPressed: _isLoading ? null : _verifyEmail,
-                          child: _isLoading
-                              ? const CircularProgressIndicator(color: Color(0xFF7CFC00))
-                              : const Text('Verify', style: TextStyle(color: Color(0xFF7CFC00))),
+                          child:
+                              _isLoading
+                                  ? const CircularProgressIndicator(
+                                    color: Color(0xFF7CFC00),
+                                  )
+                                  : const Text(
+                                    'Verify',
+                                    style: TextStyle(color: Color(0xFF7CFC00)),
+                                  ),
                         ),
                       ),
                     ] else ...[
                       const Text(
                         'Set New Password',
-                        style: TextStyle(fontSize: 22, color: Color(0xFF7CFC00)),
+                        style: TextStyle(
+                          fontSize: 22,
+                          color: Color(0xFF7CFC00),
+                        ),
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -172,9 +195,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           labelText: 'New Password',
                           labelStyle: TextStyle(color: Color(0xFF7CFC00)),
                           enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                            borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                          ),
                           focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Color(0xFF7CFC00))),
+                            borderSide: BorderSide(color: Color(0xFF7CFC00)),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -185,16 +210,22 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             backgroundColor: Colors.black87,
                           ),
                           onPressed: _isLoading ? null : _updatePassword,
-                          child: _isLoading
-                              ? const CircularProgressIndicator(color: Color(0xFF7CFC00))
-                              : const Text('Set Password', style: TextStyle(color: Color(0xFF7CFC00))),
+                          child:
+                              _isLoading
+                                  ? const CircularProgressIndicator(
+                                    color: Color(0xFF7CFC00),
+                                  )
+                                  : const Text(
+                                    'Set Password',
+                                    style: TextStyle(color: Color(0xFF7CFC00)),
+                                  ),
                         ),
                       ),
                     ],
                     if (_error != null) ...[
                       const SizedBox(height: 12),
                       Text(_error!, style: const TextStyle(color: Colors.red)),
-                    ]
+                    ],
                   ],
                 ),
               ),

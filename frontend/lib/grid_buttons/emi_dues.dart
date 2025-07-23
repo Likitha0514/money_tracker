@@ -35,7 +35,9 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
         prefs.getString('email') ?? ''; // Replace with actual user email
 
     final res = await http.get(
-      Uri.parse('http://localhost:5000/api/emi/fetchemi?email=$userEmail'),
+      Uri.parse(
+        'https://money-tracker-ofsn.onrender.com/api/emi/fetchemi?email=$userEmail',
+      ),
     );
     if (res.statusCode == 200) {
       final data = json.decode(res.body);
@@ -58,7 +60,7 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
       current = DateTime(current.year, current.month + 1);
     }
     final res = await http.post(
-      Uri.parse('http://localhost:5000/api/emi/addemi'),
+      Uri.parse('https://money-tracker-ofsn.onrender.com/api/emi/addemi'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'email': userEmail,
@@ -81,7 +83,7 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'http://localhost:5000/api/transactions/balance?email=$userEmail',
+          'https://money-tracker-ofsn.onrender.com/api/transactions/balance?email=$userEmail',
         ),
       );
 
@@ -106,7 +108,9 @@ class _EmiDuesPageState extends State<EmiDuesPage> {
   ) async {
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:5000/api/transactions/pay-emi'),
+        Uri.parse(
+          'https://money-tracker-ofsn.onrender.com/api/transactions/pay-emi',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': userEmail,

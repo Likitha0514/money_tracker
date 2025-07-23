@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -64,6 +69,7 @@ class _TrackSpendPageState extends State<TrackSpendPage> {
 
   Future<void> _downloadTransactionsAsPdf(BuildContext context) async {
     final pdf = pw.Document();
+
     final totalIn = _transactions
         .where((tx) => tx['type'] == 'in')
         .fold<double>(0, (sum, tx) => sum + (tx['amount'] as double));
@@ -74,68 +80,77 @@ class _TrackSpendPageState extends State<TrackSpendPage> {
     pdf.addPage(
       pw.MultiPage(
         build:
-            (pw.Context ctx) => [
+            (ctx) => [
               pw.Text(
                 'Transaction Details',
                 style: pw.TextStyle(
                   fontSize: 20,
                   fontWeight: pw.FontWeight.bold,
-                  color: PdfColor.fromInt(0xFF000000),
                 ),
               ),
               pw.SizedBox(height: 12),
               pw.Table.fromTextArray(
                 headers: ['Type', 'Amount', 'Note', 'Date'],
                 data:
-                    _transactions.reversed
-                        .map(
-                          (tx) => [
-                            tx['type'] == 'in' ? 'Amount In' : 'Spend',
-                            '${tx['amount'].toStringAsFixed(0)}',
-                            tx['note'],
-                            (tx['date'] as DateTime).toString(),
-                          ],
-                        )
-                        .toList(),
+                    _transactions.reversed.map((tx) {
+                      return [
+                        tx['type'] == 'in' ? 'Amount In' : 'Spend',
+                        '${tx['amount'].toStringAsFixed(0)}',
+                        tx['note'],
+                        (tx['date'] as DateTime).toString(),
+                      ];
+                    }).toList(),
                 headerStyle: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
-                  color: PdfColor.fromInt(0xFFFFFFFF),
+                  color: PdfColors.white,
                 ),
-                cellStyle: pw.TextStyle(
+                cellStyle: const pw.TextStyle(
                   fontSize: 10,
-                  color: PdfColor.fromInt(0xFF000000),
+                  color: PdfColors.black,
                 ),
                 cellAlignment: pw.Alignment.centerLeft,
-                headerDecoration: pw.BoxDecoration(
-                  color: PdfColor.fromInt(0xFF000000),
+                headerDecoration: const pw.BoxDecoration(
+                  color: PdfColors.black,
                 ),
               ),
               pw.SizedBox(height: 16),
               pw.Text(
                 'Total In: ${totalIn.toStringAsFixed(0)}',
-                style: pw.TextStyle(
-                  color: PdfColor.fromInt(0xFF000000),
-                  fontWeight: pw.FontWeight.bold,
-                ),
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               ),
               pw.Text(
                 'Total Spend: ${totalSpend.toStringAsFixed(0)}',
-                style: pw.TextStyle(
-                  color: PdfColor.fromInt(0xFF000000),
-                  fontWeight: pw.FontWeight.bold,
-                ),
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               ),
               pw.Text(
                 'Balance: ${_balance.toStringAsFixed(0)}',
-                style: pw.TextStyle(
-                  color: PdfColor.fromInt(0xFF000000),
-                  fontWeight: pw.FontWeight.bold,
-                ),
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               ),
             ],
       ),
     );
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+
+    final pdfBytes = await pdf.save();
+
+    if (kIsWeb) {
+      // For Web: trigger browser download
+      await Printing.sharePdf(bytes: pdfBytes, filename: 'transactions.pdf');
+    } else {
+      // For Mobile: Save and open PDF
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File('${dir.path}/transactions.pdf');
+        await file.writeAsBytes(pdfBytes);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('PDF saved to documents')));
+        await OpenFile.open(file.path);
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving PDF: $e')));
+      }
+    }
   }
 
   @override

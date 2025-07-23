@@ -26,7 +26,7 @@ class _AmountOutPageState extends State<AmountOutPage> {
     if (email == null) return;
 
     final res = await http.get(
-      Uri.parse('http://localhost:5000/api/transactions/balance?email=$email'),
+      Uri.parse('https://money-tracker-ofsn.onrender.com/api/transactions/balance?email=$email'),
     );
 
     if (res.statusCode == 200) {
@@ -63,7 +63,7 @@ class _AmountOutPageState extends State<AmountOutPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'http://localhost:5000/api/transactions?type=out&email=$email',
+          'https://money-tracker-ofsn.onrender.com/api/transactions?type=out&email=$email',
         ),
       );
       if (res.statusCode == 200) {

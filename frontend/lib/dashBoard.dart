@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:MoneyTracker/user_session.dart';
+import 'package:moneytracker/user_session.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +12,8 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  static const _baseUrl = 'http://localhost:5000'; // change to your IP
+  static const _baseUrl =
+      'https://money-tracker-ofsn.onrender.com'; // change to your IP
   bool _loading = true;
   String? _error;
   double _balance = 0.0;
@@ -48,7 +49,9 @@ class _DashboardPageState extends State<DashboardPage> {
     if (email == null) return;
 
     final res = await http.get(
-      Uri.parse('http://localhost:5000/api/transactions/balance?email=$email'),
+      Uri.parse(
+        'https://money-tracker-ofsn.onrender.com/api/transactions/balance?email=$email',
+      ),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
@@ -172,99 +175,98 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ],
       ),
-      body:
-          _loading
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
               ? Center(
-                child: Text(_error!, style: const TextStyle(color: Colors.red)),
-              )
+                  child:
+                      Text(_error!, style: const TextStyle(color: Colors.red)),
+                )
               : Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Hello, ${UserSession().name ?? 'User'}!',
-                          style: const TextStyle(
-                            color: Color(0xFF7CFC00),
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Hello, ${UserSession().name ?? 'User'}!',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF7CFC00),
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-
-                        Text(
-                          "Balance: ₹$_balance",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          const SizedBox(width: 8),
+                          Text(
+                            "Balance: ₹$_balance",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: Card(
-                        color: const Color(0xFF121212),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final cols = constraints.maxWidth < 600 ? 2 : 4;
-                              final rows = (buttons.length / cols).ceil();
-                              const spacing = 12.0;
-                              final cellW =
-                                  (constraints.maxWidth -
-                                      spacing * (cols - 1)) /
-                                  cols;
-                              final cellH =
-                                  (constraints.maxHeight -
-                                      spacing * (rows - 1)) /
-                                  rows;
-                              final aspectRatio = cellW / cellH;
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(
+                        child: Card(
+                          color: const Color(0xFF121212),
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final cols = constraints.maxWidth < 600 ? 2 : 4;
+                                final rows = (buttons.length / cols).ceil();
+                                const spacing = 12.0;
+                                final cellW = (constraints.maxWidth -
+                                        spacing * (cols - 1)) /
+                                    cols;
+                                final cellH = (constraints.maxHeight -
+                                        spacing * (rows - 1)) /
+                                    rows;
+                                final aspectRatio = cellW / cellH;
 
-                              return GridView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: buttons.length,
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: cols,
-                                      crossAxisSpacing: spacing,
-                                      mainAxisSpacing: spacing,
-                                      childAspectRatio: aspectRatio,
-                                    ),
-                                itemBuilder:
-                                    (_, i) => _tile(
-                                      buttons[i]['label'] as String,
-                                      buttons[i]['icon'] as IconData,
-                                      () async {
-                                        final result =
-                                            await Navigator.pushNamed(
-                                              context,
-                                              buttons[i]['route'] as String,
-                                            );
-                                        if (result == true) {
-                                          await _fetchBalance(); // 👈 refresh balance when child page returns true
-                                        }
-                                      },
-                                    ),
-                              );
-                            },
+                                return GridView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: buttons.length,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: cols,
+                                    crossAxisSpacing: spacing,
+                                    mainAxisSpacing: spacing,
+                                    childAspectRatio: aspectRatio,
+                                  ),
+                                  itemBuilder: (_, i) => _tile(
+                                    buttons[i]['label'] as String,
+                                    buttons[i]['icon'] as IconData,
+                                    () async {
+                                      final result = await Navigator.pushNamed(
+                                        context,
+                                        buttons[i]['route'] as String,
+                                      );
+                                      if (result == true) {
+                                        await _fetchBalance(); // 👈 refresh balance when child page returns true
+                                      }
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
     );
   }
 }

@@ -29,6 +29,9 @@ const addTransaction = asyncHandler(async (req, res) => {
   }
 
   if (type === 'out') {
+    if (user.balance < amount) {
+      return res.status(400).json({ message: 'Insufficient balance' });
+    }
     user.balance -= amount;
   }
 

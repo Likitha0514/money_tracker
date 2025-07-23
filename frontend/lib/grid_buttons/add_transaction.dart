@@ -35,7 +35,9 @@ class _AddTransactionCardState extends State<AddTransactionCard> {
       return;
     }
 
-    final url = Uri.parse("http://localhost:5000/api/transactions/add");
+    final url = Uri.parse(
+      "https://money-tracker-ofsn.onrender.com/api/transactions/add",
+    );
 
     final data = {
       "email": widget.email,

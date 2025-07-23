@@ -36,7 +36,7 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
   Future<void> _fetchBalance() async {
     final res = await http.get(
       Uri.parse(
-        'http://localhost:5000/api/transactions/balance?email=${widget.email}',
+        'https://money-tracker-ofsn.onrender.com/api/transactions/balance?email=${widget.email}',
       ),
     );
     if (res.statusCode == 200) {
@@ -104,7 +104,9 @@ class _AddTransactionCardState extends State<AddTransactionCard1> {
 
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:5000/api/transactions/add'),
+        Uri.parse(
+          'https://money-tracker-ofsn.onrender.com/api/transactions/add',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: body,
       );

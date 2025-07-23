@@ -35,7 +35,7 @@ class _WeeklyAnalysisPageState extends State<WeeklyAnalysisPage> {
       'yyyy-MM-dd',
     ).format(_selectedDate!.add(Duration(days: 6)));
     final uri = Uri.parse(
-      'http://localhost:5000/api/transactions/weekly-summary'
+      'https://money-tracker-ofsn.onrender.com/api/transactions/weekly-summary'
       '?email=$email&start=$start&end=$end',
     );
 

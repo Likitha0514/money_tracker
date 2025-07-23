@@ -8,13 +8,16 @@ import 'loginEvent.dart';
 import 'loginState.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  static const String _baseUrl = 'http://localhost:5000'; // change to your IP on device
+  static const String _baseUrl =
+      'https://money-tracker-ofsn.onrender.com'; // change to your IP on device
 
   LoginBloc() : super(const LoginState()) {
     on<LoginEmailChanged>(
-            (e, emit) => emit(state.copyWith(email: e.email, error: null)));
+      (e, emit) => emit(state.copyWith(email: e.email, error: null)),
+    );
     on<LoginPasswordChanged>(
-            (e, emit) => emit(state.copyWith(password: e.password, error: null)));
+      (e, emit) => emit(state.copyWith(password: e.password, error: null)),
+    );
     on<LoginSubmitted>(_onSubmit);
   }
 
@@ -58,16 +61,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
         emit(state.copyWith(isLoading: false, success: true));
       } else {
-        emit(state.copyWith(
-          isLoading: false,
-          error: data['message'] ?? 'Login failed',
-        ));
+        emit(
+          state.copyWith(
+            isLoading: false,
+            error: data['message'] ?? 'Login failed',
+          ),
+        );
       }
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        error: 'Network error: $e',
-      ));
+      emit(state.copyWith(isLoading: false, error: 'Network error: $e'));
     }
   }
 }

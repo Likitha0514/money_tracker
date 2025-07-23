@@ -44,7 +44,7 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('email') ?? '';
     final uri = Uri.parse(
-      'http://localhost:5000/api/transactions/monthly-summary'
+      'https://money-tracker-ofsn.onrender.com/api/transactions/monthly-summary'
       '?email=$email&year=$_selYear&month=$_selMonth',
     );
 

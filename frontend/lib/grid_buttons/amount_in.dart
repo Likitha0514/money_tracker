@@ -26,7 +26,9 @@ class _AmountInPageState extends State<AmountInPage> {
     if (email == null) return;
 
     final res = await http.get(
-      Uri.parse('http://localhost:5000/api/transactions/balance?email=$email'),
+      Uri.parse(
+        'https://money-tracker-ofsn.onrender.com/api/transactions/balance?email=$email',
+      ),
     );
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
@@ -44,7 +46,7 @@ class _AmountInPageState extends State<AmountInPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'http://localhost:5000/api/transactions?type=in&email=$email',
+          'https://money-tracker-ofsn.onrender.com/api/transactions?type=in&email=$email',
         ),
       );
       if (res.statusCode == 200) {
