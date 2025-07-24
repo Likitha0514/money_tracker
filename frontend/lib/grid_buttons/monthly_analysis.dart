@@ -101,18 +101,17 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                               style: TextStyle(color: Color(0xFF7CFC00)),
                             ),
                             value: _selMonth,
-                            items:
-                                _months.map((m) {
-                                  return DropdownMenuItem(
-                                    value: m,
-                                    child: Text(
-                                      m,
-                                      style: const TextStyle(
-                                        color: Color(0xFF7CFC00),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
+                            items: _months.map((m) {
+                              return DropdownMenuItem(
+                                value: m,
+                                child: Text(
+                                  m,
+                                  style: const TextStyle(
+                                    color: Color(0xFF7CFC00),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                             onChanged: (val) {
                               setState(() => _selMonth = val);
                               _fetchSummary();
@@ -126,18 +125,17 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                               style: TextStyle(color: Color(0xFF7CFC00)),
                             ),
                             value: _selYear,
-                            items:
-                                _years.map((y) {
-                                  return DropdownMenuItem(
-                                    value: y,
-                                    child: Text(
-                                      '$y',
-                                      style: const TextStyle(
-                                        color: Color(0xFF7CFC00),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
+                            items: _years.map((y) {
+                              return DropdownMenuItem(
+                                value: y,
+                                child: Text(
+                                  '$y',
+                                  style: const TextStyle(
+                                    color: Color(0xFF7CFC00),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                             onChanged: (val) {
                               setState(() => _selYear = val);
                               _fetchSummary();
@@ -190,7 +188,7 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                                       ),
                                       radius: 60,
                                       titleStyle: const TextStyle(
-                                        color: Color(0xFF7CFC00),
+                                        color: Colors.white,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -201,7 +199,7 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                                       color: Color(0xFF7A5FFF),
                                       radius: 50,
                                       titleStyle: const TextStyle(
-                                        color: Color(0xFF7CFC00),
+                                        color: Colors.white,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -212,7 +210,7 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                                       color: Color.fromARGB(255, 110, 218, 245),
                                       radius: 50,
                                       titleStyle: const TextStyle(
-                                        color: Color(0xFF7CFC00),
+                                        color: Colors.white,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -231,12 +229,10 @@ class _MonthlyAnalysisPageState extends State<MonthlyAnalysisPage> {
                             ),
                             const SizedBox(height: 12),
                             LinearProgressIndicator(
-                              value:
-                                  _inflow > 0
-                                      ? (_outflow / _inflow).clamp(0.0, 1.0)
-                                      : 0,
+                              value: _inflow > 0
+                                  ? (_outflow / _inflow).clamp(0.0, 1.0)
+                                  : 0,
                               backgroundColor: Color(0xFF7A5FFF),
-
                               valueColor: AlwaysStoppedAnimation(
                                 Color.fromARGB(255, 110, 218, 245),
                               ),

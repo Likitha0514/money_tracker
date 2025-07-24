@@ -70,15 +70,17 @@ class _RegisterPageState extends State<RegisterPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Registration successful")),
         );
-
         _formKey.currentState?.reset();
         Navigator.pop(context);
+      } else if (res.statusCode == 409) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Email already exists")),
+        );
       } else {
         final body = jsonDecode(res.body);
         final msg = body['message'] ?? "Registration failed";
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg)));
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -119,11 +121,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       controller: _nameCtrl,
                       decoration: _darkUnderline('Name'),
                       style: const TextStyle(color: Color(0xFF7CFC00)),
-                      validator:
-                          (v) =>
-                              (v == null || v.trim().isEmpty)
-                                  ? 'Enter a name'
-                                  : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Enter a name'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -152,44 +152,40 @@ class _RegisterPageState extends State<RegisterPage> {
                                 : Icons.visibility,
                             color: Color(0xFF7CFC00),
                           ),
-                          onPressed:
-                              () => setState(() => _obscurePwd = !_obscurePwd),
+                          onPressed: () =>
+                              setState(() => _obscurePwd = !_obscurePwd),
                         ),
                       ),
                       obscureText: _obscurePwd,
                       style: const TextStyle(color: Color(0xFF7CFC00)),
-                      validator:
-                          (v) =>
-                              (v == null || v.length < 8)
-                                  ? 'Min. 8 characters'
-                                  : null,
+                      validator: (v) => (v == null || v.length < 8)
+                          ? 'Min. 8 characters'
+                          : null,
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed:
-                          _isLoading
-                              ? null
-                              : () {
-                                final ok =
-                                    _formKey.currentState?.validate() ?? false;
-                                if (ok) _registerUser();
-                              },
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              final ok =
+                                  _formKey.currentState?.validate() ?? false;
+                              if (ok) _registerUser();
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black12,
                         minimumSize: const Size(double.infinity, 50),
                       ),
-                      child:
-                          _isLoading
-                              ? const CircularProgressIndicator(
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Color(0xFF7CFC00),
+                            )
+                          : const Text(
+                              'Register',
+                              style: TextStyle(
                                 color: Color(0xFF7CFC00),
-                              )
-                              : const Text(
-                                'Register',
-                                style: TextStyle(
-                                  color: Color(0xFF7CFC00),
-                                  fontSize: 18,
-                                ),
+                                fontSize: 18,
                               ),
+                            ),
                     ),
                   ],
                 ),

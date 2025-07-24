@@ -17,24 +17,28 @@ router.post(
       .withMessage('Password must be ≥ 8 chars'),
   ],
   asyncHandler(async (req, res) => {
-    /* field‑level validation errors */
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
+    const { name, email, password } = req.body;
+
+    // 🔍 Manually check for existing email
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: 'Email already exists' });
+    }
+
     try {
-      const user = await User.create(req.body);        // 🔐 auto‑hashes password
+      const user = await User.create({ name, email, password }); // auto‑hashes
       return res.status(201).json({ id: user._id });
     } catch (err) {
-      /* duplicate email -> 409 Conflict */
-      if (err.code === 11000) {
-        return res.status(409).json({ message: 'Email already exists' });
-      }
-      throw err;                                       // bubbles to central handler
+      return res.status(500).json({ message: 'Registration failed' });
     }
   })
 );
+
 
 /* ------------------------------ POST /api/users/login ------------------- */
 router.post(
